@@ -15,18 +15,24 @@ export default function ConfigModal({ isOpen, onClose, onSave, initialConfig }) 
   const [error, setError] = useState('');
   const [useCustomModel, setUseCustomModel] = useState(false);
 
+  // 仅在初始配置变更时同步到本地表单状态，避免在模型加载失败时还原用户输入
   useEffect(() => {
     if (initialConfig) {
       setConfig(initialConfig);
-      // 如果初始配置中的模型不在加载的模型列表中，则使用自定义输入模式
-      if (initialConfig.model && models.length > 0) {
-        const modelExists = models.some(m => m.id === initialConfig.model);
-        setUseCustomModel(!modelExists);
-      } else if (initialConfig.model && models.length === 0) {
+    }
+  }, [initialConfig]);
+
+  // 根据当前表单中的模型与可用模型列表，决定是否使用自定义输入
+  useEffect(() => {
+    if (config.model) {
+      if (models.length > 0) {
+        const exists = models.some(m => m.id === config.model);
+        setUseCustomModel(!exists);
+      } else {
         setUseCustomModel(true);
       }
     }
-  }, [initialConfig, models]);
+  }, [models, config.model]);
 
   const handleLoadModels = async () => {
     if (!config.type || !config.baseUrl || !config.apiKey) {
